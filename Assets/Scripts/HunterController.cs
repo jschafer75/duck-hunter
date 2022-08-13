@@ -1,42 +1,32 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class HunterController : MonoBehaviour
 {
     public BulletBehavior BulletPrefab;
     public Transform LaunchOffset;
+    public Rigidbody2D Body;
     public float speed = 3.0f;
+    public string mainMenuScene;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
+    void Start() {
+        Body = GetComponent<Rigidbody2D>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        moveCharacter(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
-        if (Input.GetButtonDown("Fire1"))
-        {
-            Instantiate(BulletPrefab, LaunchOffset.position, transform.rotation);
+    void OnMove(InputValue input) {
+        Vector2 inputVec = input.Get<Vector2>();
+        
+        Body.velocity = inputVec * speed;
+    }
+
+    void OnFire() {
+        Instantiate(BulletPrefab, LaunchOffset.position, transform.rotation).GetComponent<Rigidbody2D>().velocity = new Vector2(30.0f, 0.0f);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision){
+        if (collision.gameObject.tag == "Duck") {
+            SceneManager.LoadScene(mainMenuScene);
         }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Duck")
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    void moveCharacter(Vector2 direction)
-    {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        Vector2 pos = transform.position;
-        pos.x = pos.x + speed * horizontal * Time.deltaTime;
-        pos.y = pos.y + speed * vertical * Time.deltaTime;
-        transform.position = pos;
     }
 }
